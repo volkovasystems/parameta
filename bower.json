@@ -1,0 +1,28 @@
+{
+  "name": "parameta",
+  "description": "Parses object command format string blocks in any file.",
+  "main": "parameta.js",
+  "authors": [
+    "Richeve S. Bebedor <richeve.bebedor@gmail.com>"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "object-command-format-parser",
+    "parameta",
+    "object-command-format",
+    "object-command"
+  ],
+  "homepage": "https://github.com/volkovasystems/parameta",
+  "moduleType": [
+    "es6",
+    "globals",
+    "node"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
