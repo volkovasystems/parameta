@@ -21,5 +21,8 @@
   "bugs": {
     "url": "https://github.com/volkovasystems/parameta/issues"
   },
-  "homepage": "https://github.com/volkovasystems/parameta#readme"
+  "homepage": "https://github.com/volkovasystems/parameta#readme",
+  "dependencies": {
+    "harden": "^0.2.0"
+  }
 }
