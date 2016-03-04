@@ -24,5 +24,8 @@
   "homepage": "https://github.com/volkovasystems/parameta#readme",
   "dependencies": {
     "harden": "^0.2.0"
+  },
+  "devDependencies": {
+    "jasmine": "^2.4.1"
   }
 }

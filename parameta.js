@@ -2,7 +2,7 @@
 	@module-license:
 		The MIT License (MIT)
 
-		Copyright (c) 2014 Richeve Siodina Bebedor
+		Copyright (c) 2015 Richeve Siodina Bebedor
 
 		Permission is hereby granted, free of charge, to any person obtaining a copy
 		of this software and associated documentation files (the "Software"), to deal
@@ -26,6 +26,7 @@
 	@module-configuration:
 		{
 			"packageName": "parameta",
+			"path": "parameta/parameta.js",
 			"fileName": "parameta.js",
 			"moduleName": "parameta",
 			"authorName": "Richeve S. Bebedor",
@@ -39,7 +40,7 @@
 
 		To make the term "object command format" shorter we can alias it as "meta".
 
-		Ideally I would like to make "idea" in it its metaphysical 
+		Ideally, I would like to make "idea" in it its metaphysical 
 			entity achieve physical function. 
 
 		Therefore, a meta is a form with a function.
@@ -48,11 +49,19 @@
 
 		The function accepts a string block that contains meta data, then
 			extracts it and return the meta data as functional objects.
+
+		It always return an array because we should always assume a string block may contain
+			more meta that we can expect.
+
+		Each array contains a command and parameter.
+
+		Unlike, the previous function, this function let's you try to execute the meta.
 	@end-module-documentation
 
 	@include:
 	@end-include
 */
+
 if( !( typeof window != "undefined" &&
 	"harden" in window ) )
 {
@@ -64,6 +73,8 @@ if( typeof window != "undefined" &&
 {
 	throw new Error( "harden is not defined" ); 
 }
+
+
 
 var parameta = function parameta( meta ){
 	/*:
@@ -97,7 +108,7 @@ var parameta = function parameta( meta ){
 		objectCommandData = matchList[ index ].trim( );
 
 		//: Extract parameter data and command.
-		objectCommandData = objectCommandData.match( OBJECT_COMMAND_FORMAT_PATTERN );
+		objectCommandData = objectCommandData.match( parameta.PATTERN );
 
 		//: This is the only hack I can think to separate JSON format strings.
 		var parameterData = objectCommandData[ 2 ];
@@ -122,11 +133,18 @@ var parameta = function parameta( meta ){
 
 harden.bind( parameta )
 	( "GREEDY_PATTERN",
-		/(?:\@([a-z][a-z0-9]+(?:\-[a-z][a-z0-9]+)*)\:)\s*([^\b]+?)\s*(?:\@end\-(?:\1|command))/gm );
+		new RegExp( [ 
+			"(?:\@([a-z][a-z0-9]+(?:\-[a-z][a-z0-9]+)*)\:)\s*",
+			"([^\b]+?)",
+			"\s*(?:\@end\-(?:\1|command))"
+		].join( "" ) ), "gm" );
 
 harden.bind( parameta )
 	( "PATTERN",
-		/(?:\@([a-z][a-z0-9]+(?:\-[a-z][a-z0-9]+)*)\:)\s*([^\b]+?)\s*(?:\@end\-(?:\1|command))/ );
+		new RegExp( [ "(?:\@([a-z][a-z0-9]+(?:\-[a-z][a-z0-9]+)*)\:)\s*",
+			"([^\b]+?)",
+			"\s*(?:\@end\-(?:\1|command))"
+		].join( "" ) ) );
 
 if( typeof module != "undefined" ){ 
 	module.exports = parameta; 
