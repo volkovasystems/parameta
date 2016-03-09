@@ -1,5 +1,6 @@
 {
   "name": "parameta",
+  "version": "0.0.0",
   "description": "Parses object command format string blocks in any file.",
   "main": "parameta.js",
   "authors": [
