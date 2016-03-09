@@ -23,7 +23,9 @@
   },
   "homepage": "https://github.com/volkovasystems/parameta#readme",
   "dependencies": {
-    "harden": "^0.2.0"
+    "harden": "^0.2.0",
+    "llamalize": "^0.1.1",
+    "regxr": "0.0.1"
   },
   "devDependencies": {
     "jasmine": "^2.4.1"
