@@ -2,7 +2,8 @@
 	@module-license:
 		The MIT License (MIT)
 
-		Copyright (c) 2015 Richeve Siodina Bebedor
+		Copyright (@c) 2015 Richeve Siodina Bebedor
+		@email: richeve.bebedor@gmail.com
 
 		Permission is hereby granted, free of charge, to any person obtaining a copy
 		of this software and associated documentation files (the "Software"), to deal
@@ -86,6 +87,12 @@ if( !( typeof window != "undefined" &&
 	var regxr = require( "regxr" );
 }
 
+if( !( typeof window != "undefined" &&
+	"vincio" in window ) )
+{
+	var vincio = require( "vincio" );
+}
+
 if( typeof window != "undefined" && 
 	!( "harden" in window ) )
 {
@@ -104,9 +111,62 @@ if( typeof window != "undefined" &&
 	throw new Error( "regxr is not defined" ); 
 }
 
+if( typeof window != "undefined" && 
+	!( "vincio" in window ) )
+{
+	throw new Error( "vincio is not defined" ); 
+}
+
 var Meta = function Meta( meta ){
-	if( this instanceof Meta ){
+	if( Array.isArray( meta ) ){
+		var groupLength = meta.length;
+
+		/*:
+			This will categorize the meta as a group of meta
+				although these meta are either dependent or independent
+				they will still be considered a conglomerate.
+		*/
+		var group = meta;
+
+		var nameList = [ ];
+
+		for( var index = 0; index < groupLength; index++ ){
+			var _meta = group[ index ];
+
+			if( Array.isArray( group[ _meta.meta.name ] ) ){
+				group[ _meta.meta.name ].push( _meta );
+
+			}else if( _meta.meta.name in group ){
+				group[ _meta.meta.name ] = [ group[ _meta.meta.name ], _meta ];
+			
+			}else{
+				group[ _meta.meta.name ] = _meta;
+
+				nameList.push( _meta.meta.name );
+			}
+		}
+
+		var nameListLength = nameList.length;
+		for( var index = 0; index < nameListLength; index++ ){
+			var name = nameList[ index ];
+
+			if( Array.isArray( group[ name ] ) ){
+				group[ name ]
+					.forEach( function onEachSubGroup( meta, index ){
+						group[ name ][ "$" + index ] = meta;
+					} );
+			}
+		};
+
+		return group;
+
+	}else if( this instanceof Meta ){
 		this.meta = meta;
+
+		this.raw = meta.raw;
+
+		this.matcher = meta.matcher;
+		this.content = meta.content;
 
 		var name = llamalize( this.meta.command );
 
@@ -135,6 +195,29 @@ var Meta = function Meta( meta ){
 				}
 			};
 		}
+
+		//: This will pre-consume the data.
+		vincio( this, "then" )
+			.get( function then( ){
+				var raw = this._raw;
+				delete this._raw;
+				
+				var parameter = this._parameter;
+				delete this._parameter;
+
+				var name = this._name;
+				delete this._name;
+
+				var meta = parameta( this.raw );
+				if( raw ){
+					meta = parameta( raw );
+				}
+
+				meta[ name ].meta.parameter = parameter;
+
+				//: Return a new meta.
+				return meta[ name ];	
+			} );
 
 	}else{
 		return new Meta( meta );
@@ -195,6 +278,78 @@ Meta.prototype.chain = function chain( parameter, options ){
 	}
 };
 
+/*:
+	@method-documentation:
+		This will change the content of the meta block
+			based on the given content.
+
+		This is a transition method.
+
+		The content can be a json, string or another meta.
+	@end-method-documentation
+*/
+Meta.prototype.change = function change( content ){
+	if( content instanceof Meta ){
+		var _meta = content;
+
+		this._raw = this.raw.replace( this.matcher, _meta.matcher );
+
+		this._name = _meta.meta.name;
+
+		return this;
+	
+	}else if( typeof content == "object" ){
+		this._parameter = content;
+
+		this._name = this.meta.name;
+	
+	}else if( typeof content == "string" ){
+		this._raw = this.raw.replace( this.content, content );
+
+		this._parameter = content;
+
+		this._name = this.meta.name;
+	}
+
+	return this;
+};
+
+/*:
+	@method-documentation:
+		This will clear the content of the meta block.
+
+		This is a transition method.
+	@end-method-documentation
+*/
+Meta.prototype.clear = function clear( ){
+	return this.change( "" );
+};
+
+/*:
+	@method-documentation:
+		This will remove the meta in the raw.
+
+		This is a transition method.
+	@end-method-documentation
+*/
+Meta.prototype.collapse = function collapse( ){
+	this._raw = this.raw.replace( this.matcher, "" );
+
+	this._name = _meta.meta.name;
+
+	return this;
+};
+
+/*:
+	@method-documentation:
+		Returns the modified raw data because of
+			the application of the meta.
+	@end-method-documentation
+*/
+Meta.prototype.consume = function consume( ){
+	return this.raw;
+};
+
 var parameta = function parameta( meta ){
 	/*:
 		@meta-configuration:
@@ -203,6 +358,8 @@ var parameta = function parameta( meta ){
 			}
 		@end-meta-configuration
 	*/
+
+	var raw = meta;
 
 	//: This will separate and extract the object command format tokens.
 	var matchList = meta.match( parameta.GREEDY_BLOCK_PATTERN ) || [ ];
@@ -232,6 +389,7 @@ var parameta = function parameta( meta ){
 	for( var index = 0; index < matchListLength; index++ ){
 		//: Remove excess spaces at both ends.
 		objectCommandData = matchList[ index ].trim( );
+		var matcher = objectCommandData;
 
 
 		//: Extract parameter data and command.
@@ -244,6 +402,7 @@ var parameta = function parameta( meta ){
 
 		//: This is the only hack I can think to separate JSON format strings.
 		var parameterData = objectCommandData[ 2 ];
+		var content = parameterData;
 		try{
 			parameterData = JSON.parse( parameterData );
 
@@ -253,6 +412,9 @@ var parameta = function parameta( meta ){
 		}
 
 		objectCommandList.push( {
+			"raw": raw,
+			"matcher": matcher,
+			"content": content,
 			"command": objectCommandData[ 1 ],
 			/*:
 				The parameter may contain a single parameter value or
@@ -265,10 +427,10 @@ var parameta = function parameta( meta ){
 		} );
 	}
 
-	return objectCommandList
+	return Meta( objectCommandList
 		.map( function onEachObjectCommand( meta ){
 			return Meta( meta );
-		} );
+		} ) );
 };
 
 harden.bind( parameta )

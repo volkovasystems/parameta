@@ -29,6 +29,7 @@
   "dependencies": {
     "harden": "^0.2.0",
     "regxr": "^0.0.1",
-    "llamalize": "^0.1.1"
+    "llamalize": "^0.1.1",
+    "vincio": "^0.0.0"
   }
 }
