@@ -1,3 +1,5 @@
+"use strict";
+
 /*:
 	@module-license:
 		The MIT License (MIT)
@@ -118,6 +120,9 @@ if( typeof window != "undefined" &&
 }
 
 var Meta = function Meta( meta ){
+	/*:
+		A meta can be a group of meta so we just need to delegate them.
+	*/
 	if( Array.isArray( meta ) ){
 		var groupLength = meta.length;
 
@@ -136,7 +141,7 @@ var Meta = function Meta( meta ){
 			if( Array.isArray( group[ _meta.meta.name ] ) ){
 				group[ _meta.meta.name ].push( _meta );
 
-			}else if( _meta.meta.name in group ){
+			}else if( group[ _meta.meta.name ] instanceof Meta ){
 				group[ _meta.meta.name ] = [ group[ _meta.meta.name ], _meta ];
 			
 			}else{
@@ -146,6 +151,9 @@ var Meta = function Meta( meta ){
 			}
 		}
 
+		/*:
+			Sub group of meta will be appended with $index.
+		*/
 		var nameListLength = nameList.length;
 		for( var index = 0; index < nameListLength; index++ ){
 			var name = nameList[ index ];
